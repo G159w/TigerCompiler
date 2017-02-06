@@ -1,0 +1,2 @@
+syntax: A series of syntaxically invalid tiger programs.
+expected result: 3

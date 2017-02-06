@@ -1,0 +1,32 @@
+function lexer() : s_list =
+  let
+    var outp := s_list { key = "", next = nil }
+    var comm := ""
+    var char := getchar()
+    var incr : s_list := nil
+    var count : int := 0
+    var prec : string := ""
+  in
+    incr := outp;
+    while streq(char,"\n") | streq(char," ") do
+      char := getchar();
+    while size(char) = 1 do
+    (
+      comm := concat(comm, char);
+      if streq(char, " ") then
+      (
+        incr.key := comm;
+        incr.next := s_list { key = "", next = nil };
+        incr := incr.next;
+        comm := "";
+        char := getchar();
+        while streq(char,"\n") | streq(char," ") do
+          char := getchar()
+      )
+      else
+        char := getchar();
+      if streq(char,"\n") then
+        char := " "
+    );
+    outp
+  end

@@ -1,0 +1,9 @@
+let
+  import "libLogo.tih"
+  import "line.tih"
+  import "logo.tih"
+in
+  init_window(600,600);
+  logo(300,300);
+  close_window()
+end

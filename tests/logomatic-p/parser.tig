@@ -1,0 +1,201 @@
+function find_repeat_end(list : s_list) : s_list =
+  let
+    var iter : s_list := list.next.next.next
+    var stack : int := 1
+  in
+    while stack <> 0 do
+    (
+      if iter = nil then
+      (
+        print_err("error [ does not close\n");
+        exit(1)
+      );
+      if streq(iter.key, "[ ") then
+        stack := stack + 1;
+      if streq(iter.key, "] ") then
+        stack := stack - 1;
+      iter := iter.next
+    );
+    iter
+  end
+
+function find_fun_end(list : s_list) : s_list =
+  let
+    var iter : s_list := list.next.next
+    var stack : int := 1
+  in
+    while stack <> 0 do
+    (
+      if iter = nil then
+      (
+        print_err("error function does not close\n");
+        exit(1)
+      );
+      if streq(iter.key, "to ") then
+        stack := stack + 1;
+      if streq(iter.key, "end ") then
+        stack := stack - 1;
+      iter := iter.next
+    );
+    iter
+  end
+
+function repeat(instr : s_list, functions : c_list ) : s_list =
+  let
+    var out : s_list := nil
+    var command : string := instr.key
+    var str : string := ""
+    var func_list : c_list := nil
+    var func : s_list := nil
+  in
+    instr := instr.next;
+    str := concat(command, instr.key);
+    instr := instr.next;
+    out := s_list { key = str, next = nil };
+    out.next := s_list { key = instr.key, next = nil };
+    instr := instr.next;
+    while not(streq(instr.key, "] ")) do
+    (
+      if streq(instr.key, "forward ")
+       | streq(instr.key, "right ")
+       | streq(instr.key, "left ") then
+      (
+        out := concat_list(out, basic(instr));
+        instr := instr.next.next
+      )
+      else if streq(instr.key, "repeat ") then
+      (
+        out := concat_list(out, repeat(instr, functions));
+        instr := find_repeat_end(instr)
+      )
+      else if streq(instr.key, "to ") then
+      (
+        functions := add_function(instr.next.key, functions);
+        func_list := find_elt(instr.next.key, functions);
+        func_list.name.next := func(instr.next, functions);
+        instr := find_fun_end(instr)
+      )
+      else if find_elt(instr.key, functions) <> nil then
+      (
+        func := s_list { key = instr.key, next = nil };
+        out := concat_list(out, func);
+        instr := instr.next
+      )
+      else
+      (
+        print_err("unknown command: ");
+        print_err(instr.key);
+        exit(1)
+      )
+    );
+    out := concat_list(out, s_list { key = instr.key, next = nil});
+    instr := instr.next;
+    out
+  end
+
+function func(instr : s_list, functions : c_list ) : s_list =
+  let
+    var out : s_list := nil
+    var str : string := ""
+    var func_list : c_list := nil
+    var func : s_list := nil
+  in
+    instr := instr.next;
+    while not(streq(instr.key, "end ")) do
+    (
+      if streq(instr.key, "forward ")
+       | streq(instr.key, "right ")
+       | streq(instr.key, "left ") then
+      (
+        out := concat_list(out, basic(instr));
+        instr := instr.next.next
+      )
+      else if streq(instr.key, "repeat ") then
+      (
+        out := concat_list(out, repeat(instr, functions));
+        instr := find_repeat_end(instr)
+      )
+      else if streq(instr.key, "to ") then
+      (
+        functions := add_function(instr.next.key, functions);
+        func_list := find_elt(instr.next.key, functions);
+        func_list.name.next := func(instr.next, functions);
+        instr := find_fun_end(instr)
+      )
+      else if find_elt(instr.key, functions) <> nil then
+      (
+        func := s_list { key = instr.key, next = nil };
+        out := concat_list(out, func);
+        instr := instr.next
+      )
+      else
+      (
+        print_err("unknown command: ");
+        print_err(instr.key);
+        exit(1)
+      )
+    );
+    instr := instr.next;
+    out
+  end
+
+function basic(inp : s_list) : s_list =
+  let
+    var out : s_list := nil
+    var command : string := inp.key
+    var str : string := ""
+  in
+    inp := inp.next;
+    str := concat(command, inp.key);
+    inp := inp.next;
+    out := s_list { key = str, next = nil };
+    out
+ end
+
+function parser(commands : s_list) : c_list =
+  let
+    var iter : s_list := commands
+    var outp := c_list { name = nil, next = nil }
+    var incr : c_list := nil
+    var command : string := ""
+    var func_list : c_list := nil
+    var func : s_list := nil
+  in
+    incr := outp;
+    outp.name := s_list { key = "main", next = nil };
+    while not(streq(iter.key,"")) do
+    (
+      if streq(iter.key, "forward ")
+       | streq(iter.key, "right ")
+       | streq(iter.key, "left ") then
+      (
+        outp.name := concat_list(outp.name, basic(iter));
+        iter := iter.next.next
+      )
+      else if streq(iter.key, "repeat ") then
+      (
+        outp.name := concat_list(outp.name, repeat(iter, outp.next));
+        iter := find_repeat_end(iter)
+      )
+      else if streq(iter.key, "to ") then
+      (
+        outp := add_function(iter.next.key, outp);
+        func_list := find_elt(iter.next.key, outp);
+        func_list.name.next := func(iter.next, outp.next);
+        iter := find_fun_end(iter)
+      )
+      else if find_elt(iter.key, outp) <> nil then
+      (
+        func := s_list { key = iter.key, next = nil };
+        outp.name := concat_list(outp.name, func);
+        iter := iter.next
+      )
+      else
+      (
+        print_err("unknown command: ");
+        print_err(iter.key);
+        exit(1)
+      )
+    );
+    outp
+  end

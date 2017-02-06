@@ -1,0 +1,79 @@
+type s_list = { key : string, next : s_list }
+type c_list = { name : s_list, next : c_list }
+
+function concat_list(l1 : s_list, l2 : s_list) : s_list =
+  let
+    var outp : s_list := l1
+    var iter : s_list := nil
+  in
+    if l1 <> nil then
+    (
+      iter := l1;
+      while iter.next <> nil do
+        iter := iter.next;
+      iter.next := l2;
+      l1
+    )
+    else
+      l2
+  end
+
+function find_elt(str : string, list : c_list) : c_list =
+  let
+    var iter : c_list := list
+  in
+    while iter <> nil & not(streq(str,iter.name.key)) do
+      iter := iter.next;
+    if iter <> nil then
+      iter
+    else
+      nil
+  end
+
+function add_function(name : string, list : c_list) : c_list =
+  let
+    var iter : c_list := list
+  in
+    while iter.next <> nil do
+      iter := iter.next;
+    iter.next := c_list { name = s_list { key = name, next = nil }, next = nil };
+    list
+  end
+
+function dump_slist(list : s_list) =
+  let
+    var iter : s_list := list
+    var nb : int := 0
+  in
+    while iter <> nil do
+    (
+      nb := nb + 1;
+      print("element ");
+      print_int(nb);
+      print(": ");
+      print(iter.key);
+      print("$\n");
+      iter := iter.next
+    )
+  end
+
+function dump_clist(list : c_list) =
+  let
+    var iter : c_list := list
+    var nb : int := 0
+  in
+    if iter = nil then
+      print("empty\n");
+    while iter <> nil do
+    (
+      nb := nb + 1;
+      print("list no ");
+      print_int(nb);
+      print(" : ");
+      print(iter.name.key);
+      print("\n");
+      dump_slist(iter.name);
+      print("\n");
+      iter := iter.next
+    )
+  end

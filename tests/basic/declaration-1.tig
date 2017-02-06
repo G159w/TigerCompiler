@@ -1,0 +1,6 @@
+let
+  var foo := 1  /* foo is typed as an integer */
+in
+  0
+end
+

@@ -1,0 +1,592 @@
+function is_nb(c : string) : int =
+  let
+    var out : int := 0
+  in
+    if ord(c) <= ord("9") & ord(c) >= ord("0") then
+      out := 1
+    else
+      out := 0;
+    out
+  end
+
+
+function atoi(s : string) : int =
+  let
+    var out : int := 0
+    var len : int := 0
+    var interm : int := 0
+    var char : string := substring(s, 0, 1)
+    var sign : int := 1
+  in
+    if streq(char, "-") then
+    (
+      sign := -1;
+      char := substring(s, 1, 1);
+      s := substring(s, 1, size(s) - 1);
+      len := len + 1
+    );
+    while size(char) <> 0 & ord(char) <= ord("9") & ord(char) >= ord("0") do
+    (
+      len := len + 1;
+      char := substring(s, len, 1)
+    );
+    for i := 0 to len - 1 do
+    (
+      if i < size(s) & is_nb(substring(s, i, 1)) then
+      (
+        interm := ord(substring(s, i, 1)) - ord("0");
+        out := out * 10 + interm
+      )
+    );
+    out := out * sign;
+    out
+  end
+function forward(len : int, cursor : turtle) : turtle =
+  let
+    var poin := point { x = 0, y = 0 }
+    var new_pos := turtle { pos = poin, angle = cursor.angle }
+  in
+    new_pos.pos.x := cursor.pos.x + len * cos(cursor.angle) / trig_cst;
+    new_pos.pos.y := cursor.pos.y + len * sin(cursor.angle) / trig_cst;
+    draw_line(cursor.pos, new_pos.pos);
+    new_pos
+  end
+
+function prevent_overloading_angle(angle : int) : int =
+(
+  if angle > 360 then
+    angle := angle - 360
+  else if angle < -360 then
+    angle := angle + 360;
+  angle
+)
+
+
+function left(angle : int, cursor : turtle) : turtle =
+(
+  cursor.angle := cursor.angle + angle;
+  cursor.angle := prevent_overloading_angle(cursor.angle);
+  cursor
+)
+
+function right(angle : int, cursor : turtle) : turtle =
+(
+  cursor.angle := cursor.angle - angle;
+  cursor.angle := prevent_overloading_angle(cursor.angle);
+  cursor
+)
+
+
+function exec_repeat(parameter : int, list : s_list,
+                     cursor : turtle, instr :c_list) : turtle =
+  let
+    var stack : int := 1
+    var count : int := parameter
+    var iter : s_list := list.next.next
+    var func_list : c_list := nil
+  in
+    while count > 0 do
+    (
+      iter := list.next.next;
+      while not(streq(iter.key, "] ")) do
+      (
+        if find_elt(iter.key, instr) <> nil then
+        (
+          func_list := find_elt(iter.key, instr);
+          cursor := execute(func_list, cursor);
+          iter := iter.next
+        )
+        else if streq(substring(iter.key, 0, 5), "right") then
+        (
+          parameter := atoi(substring(iter.key, 6, size(iter.key) - 6));
+          cursor := right(parameter, cursor);
+          iter := iter.next
+        )
+        else if streq(substring(iter.key, 0, 4), "left") then
+        (
+          parameter := atoi(substring(iter.key, 5, size(iter.key) - 5));
+          cursor := left(parameter, cursor);
+          iter := iter.next
+        )
+        else if streq(substring(iter.key, 0, 6), "repeat") then
+        (
+          parameter := atoi(substring(iter.key, 7, size(iter.key) - 7));
+          cursor := exec_repeat(parameter, iter, cursor, instr);
+          iter := find_repeat_end(iter)
+        )
+        else if streq(substring(iter.key, 0, 7), "forward") then
+        (
+          parameter := atoi(substring(iter.key, 8, size(iter.key) - 8));
+          cursor := forward(parameter, cursor);
+          iter := iter.next
+        )
+      );
+      count := count - 1
+    );
+    cursor
+  end
+
+function execute(instr : c_list, cursor : turtle) : turtle =
+  let
+    var parameter : int := 0
+    var iter : s_list := nil
+    var func_list : c_list := nil
+  in
+    iter := instr.name.next;
+    while iter <> nil do
+    (
+      if find_elt(iter.key, instr) <> nil then
+      (
+        func_list := find_elt(iter.key, instr);
+        cursor := execute(func_list, cursor);
+        iter := iter.next
+      )
+      else if streq(substring(iter.key, 0, 5), "right") then
+      (
+        parameter := atoi(substring(iter.key, 6, size(iter.key) - 6));
+        cursor := right(parameter, cursor);
+        iter := iter.next
+      )
+      else if streq(substring(iter.key, 0, 4), "left") then
+      (
+        parameter := atoi(substring(iter.key, 5, size(iter.key) - 5));
+        cursor := left(parameter, cursor);
+        iter := iter.next
+      )
+      else if streq(substring(iter.key, 0, 7), "forward") then
+      (
+        parameter := atoi(substring(iter.key, 8, size(iter.key) - 8));
+        cursor := forward(parameter, cursor);
+        iter := iter.next
+      )
+      else if streq(substring(iter.key, 0, 6), "repeat") then
+      (
+        parameter := atoi(substring(iter.key, 7, size(iter.key) - 7));
+        cursor := exec_repeat(parameter, iter, cursor, instr);
+        iter := find_repeat_end(iter)
+      )
+    );
+    cursor
+  end
+function lexer() : s_list =
+  let
+    var outp := s_list { key = "", next = nil }
+    var comm := ""
+    var char := getchar()
+    var incr : s_list := nil
+    var count : int := 0
+    var prec : string := ""
+  in
+    incr := outp;
+    while streq(char,"\n") | streq(char," ") do
+      char := getchar();
+    while size(char) = 1 do
+    (
+      comm := concat(comm, char);
+      if streq(char, " ") then
+      (
+        incr.key := comm;
+        incr.next := s_list { key = "", next = nil };
+        incr := incr.next;
+        comm := "";
+        char := getchar();
+        while streq(char,"\n") | streq(char," ") do
+          char := getchar()
+      )
+      else
+        char := getchar();
+      if streq(char,"\n") then
+        char := " "
+    );
+    outp
+  end
+/*
+	Initialize a X11 window.
+	@param width : Width of the window
+	@param height : Height of the window
+*/
+primitive init_window (width : int, height : int)
+
+/*
+	Close the window
+*/
+primitive close_window ()
+
+/*
+	Draw a point on the window.
+	@param x : Position on x-axis
+	@param y : Position on y-axis
+*/
+primitive plot (x : int, y : int)
+
+/*
+	Clear the X11 window.
+*/
+primitive clear ()
+
+/*
+	Trigonomeric constant
+*/
+var trig_cst := 1000000
+
+/*
+	This function returns the cosinus of an angle *  trig_cst
+	@param angle : angle in degree
+*/
+primitive cos (angle : int) : int
+
+/*
+	This function returns the sinus of an angle *  trig_cst
+	@param angle : angle in degree
+*/
+primitive sin (angle : int) : int
+
+/*
+	This function returns the tangent of an angle *  trig_cst
+	@param angle : angle in degree
+*/
+primitive tan (angle : int) : int
+
+type point = { x : int, y : int }
+function abs(x : int) : int =
+  if x < 0 then
+    -x
+  else
+    x
+
+function draw_line(origin : point, finish : point) =
+(
+  let
+    var dx : int := abs(finish.x - origin.x)
+    var dy : int := abs(finish.y - origin.y)
+    var sx : int := 0
+    var sy : int := 0
+    var err : int := 0
+    var e1 : int := 0
+    var e2 : int := 0
+  in
+    if origin.x < finish.x then
+      sx := 1
+    else
+      sx := -1;
+    if origin.y < finish.y then
+      sy := 1
+    else
+      sy := -1;
+    err := dx - dy;
+    while origin.x <> finish.x | origin.y <> finish.y do
+    (
+      plot(origin.x, origin.y);
+      e2 := 2 * err;
+      if e2 > -dy then
+      (
+        err := err - dy;
+        origin.x := origin.x + sx
+      );
+      if e2 < dx then
+      (
+        err := err + dx;
+        origin.y := origin.y + sy
+      )
+    )
+  end
+)
+type s_list = { key : string, next : s_list }
+type c_list = { name : s_list, next : c_list }
+
+function concat_list(l1 : s_list, l2 : s_list) : s_list =
+  let
+    var outp : s_list := l1
+    var iter : s_list := nil
+  in
+    if l1 <> nil then
+    (
+      iter := l1;
+      while iter.next <> nil do
+        iter := iter.next;
+      iter.next := l2;
+      l1
+    )
+    else
+      l2
+  end
+
+function find_elt(str : string, list : c_list) : c_list =
+  let
+    var iter : c_list := list
+  in
+    while iter <> nil & not(streq(str,iter.name.key)) do
+      iter := iter.next;
+    if iter <> nil then
+      iter
+    else
+      nil
+  end
+
+function add_function(name : string, list : c_list) : c_list =
+  let
+    var iter : c_list := list
+  in
+    while iter.next <> nil do
+      iter := iter.next;
+    iter.next := c_list { name = s_list { key = name, next = nil }, next = nil };
+    list
+  end
+
+function dump_slist(list : s_list) =
+  let
+    var iter : s_list := list
+    var nb : int := 0
+  in
+    while iter <> nil do
+    (
+      nb := nb + 1;
+      print("element ");
+      print_int(nb);
+      print(": ");
+      print(iter.key);
+      print("$\n");
+      iter := iter.next
+    )
+  end
+
+function dump_clist(list : c_list) =
+  let
+    var iter : c_list := list
+    var nb : int := 0
+  in
+    if iter = nil then
+      print("empty\n");
+    while iter <> nil do
+    (
+      nb := nb + 1;
+      print("list no ");
+      print_int(nb);
+      print(" : ");
+      print(iter.name.key);
+      print("\n");
+      dump_slist(iter.name);
+      print("\n");
+      iter := iter.next
+    )
+  end
+import "list.tih"
+import "atoi.tih"
+import "lexer.tih"
+import "parser.tih"
+
+type turtle = { pos : point, angle : int }
+
+import "execute.tih"
+
+function logo (x : int, y : int) =
+  let
+    var lines : s_list := lexer()
+    var commands : c_list := parser(lines)
+    var pos := point { x = x, y = y }
+    var cursor := turtle { pos = pos, angle = 0 }
+  in
+    cursor := execute(commands, cursor);
+    print("")
+  end
+function find_repeat_end(list : s_list) : s_list =
+  let
+    var iter : s_list := list.next.next.next
+    var stack : int := 1
+  in
+    while stack <> 0 do
+    (
+      if iter = nil then
+      (
+        print_err("error [ does not close\n");
+        exit(1)
+      );
+      if streq(iter.key, "[ ") then
+        stack := stack + 1;
+      if streq(iter.key, "] ") then
+        stack := stack - 1;
+      iter := iter.next
+    );
+    iter
+  end
+
+function find_fun_end(list : s_list) : s_list =
+  let
+    var iter : s_list := list.next.next
+    var stack : int := 1
+  in
+    while stack <> 0 do
+    (
+      if iter = nil then
+      (
+        print_err("error function does not close\n");
+        exit(1)
+      );
+      if streq(iter.key, "to ") then
+        stack := stack + 1;
+      if streq(iter.key, "end ") then
+        stack := stack - 1;
+      iter := iter.next
+    );
+    iter
+  end
+
+function repeat(instr : s_list, functions : c_list ) : s_list =
+  let
+    var out : s_list := nil
+    var command : string := instr.key
+    var str : string := ""
+    var func_list : c_list := nil
+    var func : s_list := nil
+  in
+    instr := instr.next;
+    str := concat(command, instr.key);
+    instr := instr.next;
+    out := s_list { key = str, next = nil };
+    out.next := s_list { key = instr.key, next = nil };
+    instr := instr.next;
+    while not(streq(instr.key, "] ")) do
+    (
+      if streq(instr.key, "forward ")
+       | streq(instr.key, "right ")
+       | streq(instr.key, "left ") then
+      (
+        out := concat_list(out, basic(instr));
+        instr := instr.next.next
+      )
+      else if streq(instr.key, "repeat ") then
+      (
+        out := concat_list(out, repeat(instr, functions));
+        instr := find_repeat_end(instr)
+      )
+      else if streq(instr.key, "to ") then
+      (
+        functions := add_function(instr.next.key, functions);
+        func_list := find_elt(instr.next.key, functions);
+        func_list.name.next := func(instr.next, functions);
+        instr := find_fun_end(instr)
+      )
+      else if find_elt(instr.key, functions) <> nil then
+      (
+        func := s_list { key = instr.key, next = nil };
+        out := concat_list(out, func);
+        instr := instr.next
+      )
+      else
+      (
+        print_err("unknown command: ");
+        print_err(instr.key);
+        exit(1)
+      )
+    );
+    out := concat_list(out, s_list { key = instr.key, next = nil});
+    instr := instr.next;
+    out
+  end
+
+function func(instr : s_list, functions : c_list ) : s_list =
+  let
+    var out : s_list := nil
+    var str : string := ""
+    var func_list : c_list := nil
+    var func : s_list := nil
+  in
+    instr := instr.next;
+    while not(streq(instr.key, "end ")) do
+    (
+      if streq(instr.key, "forward ")
+       | streq(instr.key, "right ")
+       | streq(instr.key, "left ") then
+      (
+        out := concat_list(out, basic(instr));
+        instr := instr.next.next
+      )
+      else if streq(instr.key, "repeat ") then
+      (
+        out := concat_list(out, repeat(instr, functions));
+        instr := find_repeat_end(instr)
+      )
+      else if streq(instr.key, "to ") then
+      (
+        functions := add_function(instr.next.key, functions);
+        func_list := find_elt(instr.next.key, functions);
+        func_list.name.next := func(instr.next, functions);
+        instr := find_fun_end(instr)
+      )
+      else if find_elt(instr.key, functions) <> nil then
+      (
+        func := s_list { key = instr.key, next = nil };
+        out := concat_list(out, func);
+        instr := instr.next
+      )
+      else
+      (
+        print_err("unknown command: ");
+        print_err(instr.key);
+        exit(1)
+      )
+    );
+    instr := instr.next;
+    out
+  end
+
+function basic(inp : s_list) : s_list =
+  let
+    var out : s_list := nil
+    var command : string := inp.key
+    var str : string := ""
+  in
+    inp := inp.next;
+    str := concat(command, inp.key);
+    inp := inp.next;
+    out := s_list { key = str, next = nil };
+    out
+ end
+
+function parser(commands : s_list) : c_list =
+  let
+    var iter : s_list := commands
+    var outp := c_list { name = nil, next = nil }
+    var incr : c_list := nil
+    var command : string := ""
+    var func_list : c_list := nil
+    var func : s_list := nil
+  in
+    incr := outp;
+    outp.name := s_list { key = "main", next = nil };
+    while not(streq(iter.key,"")) do
+    (
+      if streq(iter.key, "forward ")
+       | streq(iter.key, "right ")
+       | streq(iter.key, "left ") then
+      (
+        outp.name := concat_list(outp.name, basic(iter));
+        iter := iter.next.next
+      )
+      else if streq(iter.key, "repeat ") then
+      (
+        outp.name := concat_list(outp.name, repeat(iter, outp.next));
+        iter := find_repeat_end(iter)
+      )
+      else if streq(iter.key, "to ") then
+      (
+        outp := add_function(iter.next.key, outp);
+        func_list := find_elt(iter.next.key, outp);
+        func_list.name.next := func(iter.next, outp.next);
+        iter := find_fun_end(iter)
+      )
+      else if find_elt(iter.key, outp) <> nil then
+      (
+        func := s_list { key = iter.key, next = nil };
+        outp.name := concat_list(outp.name, func);
+        iter := iter.next
+      )
+      else
+      (
+        print_err("unknown command: ");
+        print_err(iter.key);
+        exit(1)
+      )
+    );
+    outp
+  end

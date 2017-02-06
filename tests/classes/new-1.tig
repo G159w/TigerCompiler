@@ -1,0 +1,15 @@
+let
+  class Foo
+  {
+    var bar := 42
+    method baz() = print("Foo.\n")
+  }
+  class Empty
+  {
+  }
+  var foo1 : Foo := new Foo
+  /* As for any variable, the type annotation is optional.  */
+  var foo2 := new Foo
+in
+  0
+end

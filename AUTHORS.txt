@@ -1,0 +1,3 @@
+Remi Faucheux <fauche_r@epita.fr>
+Henri Baudesson <baudes_h@epita.fr>
+Paul Carre <paul.carre@epita.fr>

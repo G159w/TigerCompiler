@@ -1,0 +1,43 @@
+function is_nb(c : string) : int =
+  let
+    var out : int := 0
+  in
+    if ord(c) <= ord("9") & ord(c) >= ord("0") then
+      out := 1
+    else
+      out := 0;
+    out
+  end
+
+
+function atoi(s : string) : int =
+  let
+    var out : int := 0
+    var len : int := 0
+    var interm : int := 0
+    var char : string := substring(s, 0, 1)
+    var sign : int := 1
+  in
+    if streq(char, "-") then
+    (
+      sign := -1;
+      char := substring(s, 1, 1);
+      s := substring(s, 1, size(s) - 1);
+      len := len + 1
+    );
+    while size(char) <> 0 & ord(char) <= ord("9") & ord(char) >= ord("0") do
+    (
+      len := len + 1;
+      char := substring(s, len, 1)
+    );
+    for i := 0 to len - 1 do
+    (
+      if i < size(s) & is_nb(substring(s, i, 1)) then
+      (
+        interm := ord(substring(s, i, 1)) - ord("0");
+        out := out * 10 + interm
+      )
+    );
+    out := out * sign;
+    out
+  end

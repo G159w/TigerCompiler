@@ -1,0 +1,6 @@
+let
+  function fortytwo() : int = 42
+  var fortytwo := fortytwo()
+in
+  print_int(fortytwo); print("\n")
+end

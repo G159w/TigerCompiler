@@ -1,0 +1,8 @@
+let
+  type a = int
+  type b = int
+  var a := 1
+  var b := int 3
+in
+  a = b           /* OK */
+end

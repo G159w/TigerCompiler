@@ -1,0 +1,43 @@
+function abs(x : int) : int =
+  if x < 0 then
+    -x
+  else
+    x
+
+function draw_line(origin : point, finish : point) =
+(
+  let
+    var dx : int := abs(finish.x - origin.x)
+    var dy : int := abs(finish.y - origin.y)
+    var sx : int := 0
+    var sy : int := 0
+    var err : int := 0
+    var e1 : int := 0
+    var e2 : int := 0
+  in
+    if origin.x < finish.x then
+      sx := 1
+    else
+      sx := -1;
+    if origin.y < finish.y then
+      sy := 1
+    else
+      sy := -1;
+    err := dx - dy;
+    while origin.x <> finish.x | origin.y <> finish.y do
+    (
+      plot(origin.x, origin.y);
+      e2 := 2 * err;
+      if e2 > -dy then
+      (
+        err := err - dy;
+        origin.x := origin.x + sx
+      );
+      if e2 < dx then
+      (
+        err := err + dx;
+        origin.y := origin.y + sy
+      )
+    )
+  end
+)

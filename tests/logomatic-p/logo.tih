@@ -1,0 +1,19 @@
+import "list.tih"
+import "atoi.tih"
+import "lexer.tih"
+import "parser.tih"
+
+type turtle = { pos : point, angle : int }
+
+import "execute.tih"
+
+function logo (x : int, y : int) =
+  let
+    var lines : s_list := lexer()
+    var commands : c_list := parser(lines)
+    var pos := point { x = x, y = y }
+    var cursor := turtle { pos = pos, angle = 0 }
+  in
+    cursor := execute(commands, cursor);
+    print("")
+  end

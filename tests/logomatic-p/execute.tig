@@ -1,0 +1,127 @@
+function forward(len : int, cursor : turtle) : turtle =
+  let
+    var poin := point { x = 0, y = 0 }
+    var new_pos := turtle { pos = poin, angle = cursor.angle }
+  in
+    new_pos.pos.x := cursor.pos.x + len * cos(cursor.angle) / trig_cst;
+    new_pos.pos.y := cursor.pos.y + len * sin(cursor.angle) / trig_cst;
+    draw_line(cursor.pos, new_pos.pos);
+    new_pos
+  end
+
+function prevent_overloading_angle(angle : int) : int =
+(
+  if angle > 360 then
+    angle := angle - 360
+  else if angle < -360 then
+    angle := angle + 360;
+  angle
+)
+
+
+function left(angle : int, cursor : turtle) : turtle =
+(
+  cursor.angle := cursor.angle + angle;
+  cursor.angle := prevent_overloading_angle(cursor.angle);
+  cursor
+)
+
+function right(angle : int, cursor : turtle) : turtle =
+(
+  cursor.angle := cursor.angle - angle;
+  cursor.angle := prevent_overloading_angle(cursor.angle);
+  cursor
+)
+
+
+function exec_repeat(parameter : int, list : s_list,
+                     cursor : turtle, instr :c_list) : turtle =
+  let
+    var stack : int := 1
+    var count : int := parameter
+    var iter : s_list := list.next.next
+    var func_list : c_list := nil
+  in
+    while count > 0 do
+    (
+      iter := list.next.next;
+      while not(streq(iter.key, "] ")) do
+      (
+        if find_elt(iter.key, instr) <> nil then
+        (
+          func_list := find_elt(iter.key, instr);
+          cursor := execute(func_list, cursor);
+          iter := iter.next
+        )
+        else if streq(substring(iter.key, 0, 5), "right") then
+        (
+          parameter := atoi(substring(iter.key, 6, size(iter.key) - 6));
+          cursor := right(parameter, cursor);
+          iter := iter.next
+        )
+        else if streq(substring(iter.key, 0, 4), "left") then
+        (
+          parameter := atoi(substring(iter.key, 5, size(iter.key) - 5));
+          cursor := left(parameter, cursor);
+          iter := iter.next
+        )
+        else if streq(substring(iter.key, 0, 6), "repeat") then
+        (
+          parameter := atoi(substring(iter.key, 7, size(iter.key) - 7));
+          cursor := exec_repeat(parameter, iter, cursor, instr);
+          iter := find_repeat_end(iter)
+        )
+        else if streq(substring(iter.key, 0, 7), "forward") then
+        (
+          parameter := atoi(substring(iter.key, 8, size(iter.key) - 8));
+          cursor := forward(parameter, cursor);
+          iter := iter.next
+        )
+      );
+      count := count - 1
+    );
+    cursor
+  end
+
+function execute(instr : c_list, cursor : turtle) : turtle =
+  let
+    var parameter : int := 0
+    var iter : s_list := nil
+    var func_list : c_list := nil
+  in
+    iter := instr.name.next;
+    while iter <> nil do
+    (
+      if find_elt(iter.key, instr) <> nil then
+      (
+        func_list := find_elt(iter.key, instr);
+        cursor := execute(func_list, cursor);
+        iter := iter.next
+      )
+      else if streq(substring(iter.key, 0, 5), "right") then
+      (
+        parameter := atoi(substring(iter.key, 6, size(iter.key) - 6));
+        cursor := right(parameter, cursor);
+        iter := iter.next
+      )
+      else if streq(substring(iter.key, 0, 4), "left") then
+      (
+        parameter := atoi(substring(iter.key, 5, size(iter.key) - 5));
+        cursor := left(parameter, cursor);
+        iter := iter.next
+      )
+      else if streq(substring(iter.key, 0, 7), "forward") then
+      (
+        parameter := atoi(substring(iter.key, 8, size(iter.key) - 8));
+        cursor := forward(parameter, cursor);
+        iter := iter.next
+      )
+      else if streq(substring(iter.key, 0, 6), "repeat") then
+      (
+        parameter := atoi(substring(iter.key, 7, size(iter.key) - 7));
+        cursor := exec_repeat(parameter, iter, cursor, instr);
+        iter := find_repeat_end(iter)
+      )
+    );
+    cursor
+  end
