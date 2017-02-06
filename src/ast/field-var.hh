@@ -14,7 +14,18 @@ namespace ast
   /// FieldVar.
   class FieldVar : public Var
   {
-  // FIXME: Some code was deleted here.
+    public:
+      FieldVar(const Location& location, Var* var, misc::symbol symb);
+      virtual ~FieldVar();
+      void accept(ConstVisitor& v) const override;
+      void accept(Visitor& v) override;
+      const Var& var_get() const;
+      Var& var_get();
+      const misc::symbol& symb_get() const;
+      misc::symbol& symb_get();
+    protected:
+      Var* var_;
+      misc::symbol symb_;
   };
 
 } // namespace ast

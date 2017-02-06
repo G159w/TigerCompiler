@@ -8,7 +8,7 @@
 
 namespace ast
 {
-  StringExp::StringExp(const Location& location, const misc::symbol& name)
+  StringExp::StringExp(const Location& location, const std::string& name)
     : Exp(location)
     , name_(name)
   {}

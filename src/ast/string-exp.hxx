@@ -9,12 +9,12 @@
 
 namespace ast
 {
-  inline const misc::symbol&
+  inline const std::string&
   StringExp::name_get() const
   {
     return name_;
   }
-  inline misc::symbol&
+  inline std::string&
   StringExp::name_get()
   {
     return name_;

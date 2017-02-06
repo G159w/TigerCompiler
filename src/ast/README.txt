@@ -32,14 +32,14 @@ Incomplete classes are tagged with a `*'.
     OpExp           (Exp left, Oper oper, Exp right)
     RecordExp       [OK](NameTy arr, fieldinits_type vec)
     SeqExp          [OK](exps_type exps)
-    StringExp       [OK](symbol name)
+    StringExp       [OK](string name)
     WhileExp        (Exp test, Exp body)
 
   /Ty/              ()
     ArrayTy         (NameTy base_type)
     ClassTy         (NameTy super, DecsList decs)
     NameTy          (symbol name)
-*   RecordTy        (Field field)
+    RecordTy        [OK](Field field)
 
   DecsList          (decs_type decs)
 
