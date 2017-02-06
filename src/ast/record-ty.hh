@@ -15,10 +15,10 @@ namespace ast
   class RecordTy : public Ty
   {
     public:
-      RecordTy(const location& location, Field* field);
+      RecordTy(const Location& location, Field* field);
       virtual ~RecordTy();
-      void accept(constvisitor& v) const override;
-      void accept(visitor& v) override;
+      void accept(ConstVisitor& v) const override;
+      void accept(Visitor& v) override;
       const Field& field_get() const;
       Field& field_get();
 

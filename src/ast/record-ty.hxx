@@ -11,12 +11,12 @@ namespace ast
 {
 
   inline const Field&
-  RecordTy::base_type_get() const
+  RecordTy::field_get() const
   {
     return *field_;
   }
   inline Field&
-  RecordTy::base_type_get()
+  RecordTy::field_get()
   {
     return *field_;
   }
